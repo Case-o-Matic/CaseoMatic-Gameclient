@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaseoMaticClient", "CaseoMaticClient\CaseoMaticClient.csproj", "{A448EC96-AFE2-4EF5-9AEE-ABE8849F46CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaseoMaticServer", "CaseoMaticServer\CaseoMaticServer.csproj", "{FF54611B-6EB8-4E6E-84C9-2BA1C7E3D201}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaseoMaticCore", "CaseoMaticCore\CaseoMaticCore.csproj", "{6DABF06B-9398-4DED-B75F-E5453E2392B2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A448EC96-AFE2-4EF5-9AEE-ABE8849F46CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A448EC96-AFE2-4EF5-9AEE-ABE8849F46CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A448EC96-AFE2-4EF5-9AEE-ABE8849F46CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A448EC96-AFE2-4EF5-9AEE-ABE8849F46CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF54611B-6EB8-4E6E-84C9-2BA1C7E3D201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF54611B-6EB8-4E6E-84C9-2BA1C7E3D201}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF54611B-6EB8-4E6E-84C9-2BA1C7E3D201}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF54611B-6EB8-4E6E-84C9-2BA1C7E3D201}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DABF06B-9398-4DED-B75F-E5453E2392B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DABF06B-9398-4DED-B75F-E5453E2392B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DABF06B-9398-4DED-B75F-E5453E2392B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DABF06B-9398-4DED-B75F-E5453E2392B2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

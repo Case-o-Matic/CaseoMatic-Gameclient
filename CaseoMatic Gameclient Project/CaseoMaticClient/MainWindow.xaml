@@ -1,0 +1,24 @@
+﻿<Window x:Class="CaseoMaticClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CaseoMaticClient"
+        mc:Ignorable="d"
+        Title="Case-o-Matic Client" Height="592.5" Width="991" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded" Closing="Window_Closing">
+    <Grid>
+        <TabControl x:Name="tabControl" Margin="0,25,0,0">
+            <TabItem Header="Store" FontSize="16">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="Games" FontSize="16">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="339">
+            <Label x:Name="lblUsername" Content="Username" FontSize="13.333"/>
+            <Label x:Name="label1" Content="/" FontSize="13.333" Width="16"/>
+            <Label x:Name="lblEmail" Content="E-Mail" FontSize="13.333"/>
+        </StackPanel>
+    </Grid>
+</Window>
