@@ -75,7 +75,7 @@ namespace CaseoMaticCore
             }
         }
 
-        public void Send(SocketMessage socketmessage)
+        public string Send(SocketMessage socketmessage)
         {
             try
             {
@@ -84,11 +84,14 @@ namespace CaseoMaticCore
 
                 byte[] messageInBytes = Convert.FromBase64String(messageSerializedAndEncrypted);
                 socket.Send(messageInBytes);
+
+                return messageSerialized;
             }
             catch (Exception ex)
             {
                 Log("Exception while sending a message: " + ex.ToString());
             }
+            return null;
         }
         public SocketMessage Receive()
         {
@@ -97,7 +100,7 @@ namespace CaseoMaticCore
                 byte[] messageInBytes = new byte[256];
                 socket.Receive(messageInBytes);
 
-                string message = Crypto.DecryptString(Convert.ToBase64String(messageInBytes));
+                string message = Crypto.DecryptString(messageInBytes);
                 return JsonParser.Deserialize<SocketMessage>(Convert.ToBase64String(messageInBytes));
             }
             catch (Exception ex)

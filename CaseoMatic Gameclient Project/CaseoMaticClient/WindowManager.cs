@@ -13,7 +13,7 @@ namespace CaseoMaticClient
 {
     public class WindowManager
     {
-        public const string version = "1.01";
+        public const string version = "1.02";
         public static WindowManager Instance;
 
         public MainWindow mainWindow;
@@ -49,8 +49,9 @@ namespace CaseoMaticClient
 
         public bool Login(string username, string password)
         {
-            clientSocket.Send(new SocketMessage("login", username, password));
+            MessageBox.Show(clientSocket.Send(new SocketMessage("login", username, password)));
             SocketMessage loginStateMsg = clientSocket.Receive();
+
             if (loginStateMsg.type == "loginsuccess")
             {
                 currentLoginInfo = new LoginInfo(username, loginStateMsg.data[0], loginStateMsg.data[1]);

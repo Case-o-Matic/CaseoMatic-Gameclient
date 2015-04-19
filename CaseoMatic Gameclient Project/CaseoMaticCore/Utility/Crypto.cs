@@ -9,10 +9,7 @@ namespace CaseoMaticCore
     {
         private static byte[] entropy = new byte[4] { 0x4d, 0x76, 0x61, 0x6e };
 
-        private static byte[] EncryptString(byte[] clearText)
-        {
-            return ProtectedData.Protect(clearText, entropy, DataProtectionScope.LocalMachine);
-        }
+
 
         public static string EncryptString(string clearText)
         {
@@ -21,29 +18,16 @@ namespace CaseoMaticCore
             return Convert.ToBase64String(encryptedData);
         }
 
-        /// <summary>
-        /// Decrypts the string.
-        /// </summary>
-        /// <param name="cipherData">The cipher data.</param>
-        /// <param name="Key">The key.</param>
-        /// <param name="IV">The IV.</param>
         /// <returns></returns>
-        private static byte[] DecryptString(byte[] cipherData)
+        public static string DecryptString(byte[] cipherBytes)
         {
-            return ProtectedData.Unprotect(cipherData, entropy, DataProtectionScope.LocalMachine);
+            byte[] decryptedData = ProtectedData.Unprotect(cipherBytes, entropy, DataProtectionScope.LocalMachine); ;
+            return System.Text.Encoding.Unicode.GetString(decryptedData);
         }
 
-        /// <summary>
-        /// Decrypts the string.
-        /// </summary>
-        /// <param name="cipherText">The cipher text.</param>
-        /// <param name="Password">The password.</param>
-        /// <returns></returns>
-        public static string DecryptString(string cipherText)
+        private static byte[] EncryptString(byte[] clearText)
         {
-            byte[] cipherBytes = Convert.FromBase64String(cipherText);
-            byte[] decryptedData = DecryptString(cipherBytes);
-            return System.Text.Encoding.Unicode.GetString(decryptedData);
+            return ProtectedData.Protect(clearText, entropy, DataProtectionScope.LocalMachine);
         }
     } 
 }

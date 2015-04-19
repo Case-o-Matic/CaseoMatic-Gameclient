@@ -15,7 +15,7 @@ namespace CaseoMaticCore
     {
         private const string logFilePath = "server.log";
 
-        public delegate void OnReceiveMessageHandler(SocketMessage msg);
+        public delegate void OnReceiveMessageHandler(Socket socket, SocketMessage msg);
         public event OnReceiveMessageHandler OnReceiveMessage;
 
         public bool isOnline { get; private set; }
@@ -53,25 +53,22 @@ namespace CaseoMaticCore
             try
             {
                 DbInitialize(dbname);
-                socket.Bind(localEndPoint);
 
                 timer.Start();
+                socket.Bind(localEndPoint);
+
                 Log("Started the server");
                 isOnline = true;
 
                 while (isOnline)
                 {
-                    Console.WriteLine("Listening to clients");
                     socket.Listen(1);
-                    Console.WriteLine("Client connected");
 
                     Socket newSocket = socket.Accept();
-                    Thread receiveThread = new Thread(ReceiveMessages);
-                    Console.WriteLine("Socket accepted and receive-thread created");
 
+                    Thread receiveThread = new Thread(ReceiveMessages);
                     socketConnections.Add(newSocket, receiveThread);
                     receiveThread.Start(newSocket);
-                    Console.WriteLine("Started the receive-thread");
                 }
             }
             catch (Exception ex)
@@ -106,12 +103,25 @@ namespace CaseoMaticCore
             }
         }
 
-        public void Send(SocketMessage socketmessage)
+        public void Send(Socket socket, SocketMessage socketmessage)
         {
             try
             {
+                if(!socketConnections.ContainsKey(socket))
+                {
+                    Log("The socket " + socket.RemoteEndPoint + " is not a part of the socket connections list");
+                    return;
+                }
+                if(!socket.Connected)
+                {
+                    Log("The socket is not connected anymore");
+                    socket.Close();
+
+                    return;
+                }
+
                 string messageSerialized = JsonParser.Serialize<SocketMessage>(socketmessage);
-                string messageSerializedAndEncrypted = Crypto.EncryptString(messageSerialized, Properties.Resources.CryptoPassword + "-server");
+                string messageSerializedAndEncrypted = Crypto.EncryptString(messageSerialized);
 
                 byte[] messageInBytes = Convert.FromBase64String(messageSerializedAndEncrypted);
                 socket.Send(messageInBytes);
@@ -159,17 +169,13 @@ namespace CaseoMaticCore
                 Socket sock = socket as Socket;
                 while (isOnline)
                 {
-                    Console.WriteLine("Receiving message");
-                    byte[] msgInBytes = new byte[256];
+                    byte[] msgInBytes = new byte[512];
                     sock.Receive(msgInBytes);
-                    Console.WriteLine("Received a message");
 
-                    string message = Crypto.DecryptString(Convert.ToBase64String(msgInBytes), Properties.Resources.CryptoPassword + "-client");
-                    Console.WriteLine("The message: " + message);
-
+                    string message = Crypto.DecryptString(msgInBytes);
                     SocketMessage socketMessage = JsonParser.Deserialize<SocketMessage>(message);
                     if (OnReceiveMessage != null)
-                        OnReceiveMessage(socketMessage);
+                        OnReceiveMessage(sock, socketMessage);
                 }
             }
             catch (Exception ex)
