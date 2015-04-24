@@ -5,11 +5,13 @@ using System.Text;
 
 namespace CaseoMaticCore
 {
-    public struct SocketMessage
+    public class SocketMessage
     {
         public string type;
         public string[] data;
 
+        public SocketMessage()
+        { }
         public SocketMessage(string type, params string[] data)
         {
             this.type = type;

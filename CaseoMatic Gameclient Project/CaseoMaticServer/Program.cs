@@ -1,5 +1,4 @@
 ﻿using CaseoMaticCore;
-using Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -135,112 +134,121 @@ namespace CaseoMaticServer
 
         private static void ServerSocket_OnReceiveMessage(Socket socket, SocketMessage msg)
         {
-            switch (msg.type)
+            try
             {
-                case "login":
-                    string loginusername = msg.data[0];
-                    string loginpw = msg.data[1];
+                switch (msg.type)
+                {
+                    case "login":
+                        string loginusername = msg.data[0];
+                        string loginpw = msg.data[1];
 
-                    string[] loginRow = serverSocket.DbSelectRowFromTable("AccountsCredentials", loginusername);
-                    if (loginRow != null)
-                    {
-                        if (loginRow[1] == loginpw)
+                        string[] loginRow = serverSocket.DbSelectRowFromTableString("AccountsCredentials", loginusername);
+                        loginRow.ToList<string>().ForEach((s) => { Console.WriteLine(s); });
+                        if (loginRow != null)
                         {
-                            if(blockedUsersForLogin.ContainsKey(loginusername))
+                            if (loginRow[1] == loginpw)
                             {
-                                serverSocket.Log(loginusername + " tried to log into his account but is blocked for " + (blockedUsersForLogin[loginusername] / 1000) + " ms");
-                                break;
-                            }
+                                if (blockedUsersForLogin.ContainsKey(loginusername))
+                                {
+                                    serverSocket.Log(loginusername + " tried to log into his account but is blocked for " + (blockedUsersForLogin[loginusername] / 1000) + " ms");
+                                    break;
+                                }
 
-                            serverSocket.Send(socket, new SocketMessage("loginsuccess", loginRow[3], loginRow[4]));
-                            serverSocket.Log("\"" + loginusername + "\" logged into his account");
-                        }
-                        else
-                        {
-                            serverSocket.Send(socket, new SocketMessage("loginfail", "pw"));
-                            serverSocket.Log("\"" + loginusername + "\" couldnt log into his account");
-                        }
-                    }
-                    else
-                    {
-                        serverSocket.Send(socket, new SocketMessage("loginfail", "name"));
-                        serverSocket.Log("The username \"" + loginusername + "\" does not exist");
-                    }
-                    break;
-
-                case "register":
-                    string registerusername = msg.data[0];
-                    string registerpw = msg.data[1];
-                    string registeremail = msg.data[2];
-
-                    string[] registerRow = serverSocket.DbSelectRowFromTable("AccountsCredentials", registerusername);
-                    if (registerRow != null)
-                    {
-                        serverSocket.Send(socket, new SocketMessage("registerfail", "alreadyexists"));
-                        serverSocket.Log("Registering the account \"" + registerusername + "\" failed, username already exists");
-                    }
-                    else
-                    {
-                        string dataId = Guid.NewGuid().ToString();
-                        serverSocket.DbInsertRowIntoTable("AccountsCredentials", registerusername, registerpw, registeremail, dataId);
-                        serverSocket.DbInsertRowIntoTable("AccountsData", dataId, JsonParser.Serialize<AccountSettings>(new AccountSettings()));
-
-                        serverSocket.Send(socket, new SocketMessage("registersuccess", dataId));
-                        serverSocket.Log("\"" + registerusername + "\" has been registered");
-                    }
-                    break;
-
-                case "unregister":
-                    string unregisterusername = msg.data[0];
-                    string unregisterpw = msg.data[1];
-
-                    string[] unregisterRow = serverSocket.DbSelectRowFromTable("AccountsCredentials", unregisterusername);
-                    if(unregisterRow != null)
-                    {
-                        if(unregisterRow[2] == unregisterpw)
-                        {
-                            if (serverSocket.DbDeleteRowFromTable("AccountsCredentials", unregisterusername))
-                            {
-                                serverSocket.DbDeleteRowFromTable("AccountsData", unregisterRow[3]);
-                                serverSocket.Send(socket, new SocketMessage("unregistersuccess"));
-                                serverSocket.Log("Unregistered \"" + unregisterusername + "\" successfully");
+                                serverSocket.Send(socket, new SocketMessage("loginsuccess", loginRow[3], loginRow[4]));
+                                serverSocket.Log("\"" + loginusername + "\" logged into his account");
                             }
                             else
                             {
-                                serverSocket.Send(socket, new SocketMessage("unregisterfail", "internal"));
-                                serverSocket.Log("Unregistering \"" + unregisterusername + "\" was unsuccessful");
+                                serverSocket.Send(socket, new SocketMessage("loginfail", "pw"));
+                                serverSocket.Log("\"" + loginusername + "\" couldnt log into his account");
                             }
                         }
                         else
                         {
-                            serverSocket.Send(socket, new SocketMessage("unregisterfail", "pw"));
-                            serverSocket.Log("\"" + unregisterusername + "\" cant unregister his account because he gave wrong credentials");
+                            serverSocket.Send(socket, new SocketMessage("loginfail", "name"));
+                            serverSocket.Log("The username \"" + loginusername + "\" does not exist");
                         }
-                    }
-                    else
-                    {
-                        serverSocket.Send(socket, new SocketMessage("unregisterfail", "notfound"));
-                        serverSocket.Log("\"" + unregisterusername + "\" does not exist");
-                    }
-                    break;
+                        break;
 
-                case "getdata":
-                    string dataid = msg.data[0];
-                    string[] dataRow = serverSocket.DbSelectRowFromTable("AccountsData", dataid);
-                    if(dataRow != null)
-                    {
-                        serverSocket.Send(socket, new SocketMessage("getdatasuccess", dataRow[1] /* TODO: Add new data items if more data gets stored in the database */));
-                    }
-                    else
-                    {
-                        serverSocket.Send(socket, new SocketMessage("getdatafail", "notfound"));
-                    }
-                    break;
+                    case "register":
+                        string registerusername = msg.data[0];
+                        string registerpw = msg.data[1];
+                        string registeremail = msg.data[2];
 
-                default:
-                    serverSocket.Send(socket, new SocketMessage("unknown", "error"));
-                    serverSocket.Log("The message type \"" + msg.type + "\" is unknown");
-                    break;
+                        string[] registerRow = serverSocket.DbSelectRowFromTableString("AccountsCredentials", registerusername);
+                        if (registerRow != null)
+                        {
+                            serverSocket.Send(socket, new SocketMessage("registerfail", "alreadyexists"));
+                            serverSocket.Log("Registering the account \"" + registerusername + "\" failed, username already exists");
+                        }
+                        else
+                        {
+                            string dataId = Guid.NewGuid().ToString();
+                            serverSocket.DbInsertRowIntoTable("AccountsCredentials", registerusername, registerpw, registeremail, dataId);
+                            //serverSocket.DbInsertRowIntoTable("AccountsData", dataId, JsonConvert.Serialize<AccountSettings>(new AccountSettings()));
+
+                            serverSocket.Send(socket, new SocketMessage("registersuccess", dataId));
+                            serverSocket.Log("\"" + registerusername + "\" has been registered");
+                        }
+                        break;
+
+                    case "unregister":
+                        string unregisterusername = msg.data[0];
+                        string unregisterpw = msg.data[1];
+
+                        string[] unregisterRow = serverSocket.DbSelectRowFromTableString("AccountsCredentials", unregisterusername);
+                        if (unregisterRow != null)
+                        {
+                            if (unregisterRow[2] == unregisterpw)
+                            {
+                                if (serverSocket.DbDeleteRowFromTable("AccountsCredentials", unregisterusername))
+                                {
+                                    serverSocket.DbDeleteRowFromTable("AccountsData", unregisterRow[3]);
+                                    serverSocket.Send(socket, new SocketMessage("unregistersuccess"));
+                                    serverSocket.Log("Unregistered \"" + unregisterusername + "\" successfully");
+                                }
+                                else
+                                {
+                                    serverSocket.Send(socket, new SocketMessage("unregisterfail", "internal"));
+                                    serverSocket.Log("Unregistering \"" + unregisterusername + "\" was unsuccessful");
+                                }
+                            }
+                            else
+                            {
+                                serverSocket.Send(socket, new SocketMessage("unregisterfail", "pw"));
+                                serverSocket.Log("\"" + unregisterusername + "\" cant unregister his account because he gave wrong credentials");
+                            }
+                        }
+                        else
+                        {
+                            serverSocket.Send(socket, new SocketMessage("unregisterfail", "notfound"));
+                            serverSocket.Log("\"" + unregisterusername + "\" does not exist");
+                        }
+                        break;
+
+                    case "getdata":
+                        string dataid = msg.data[0];
+                        string[] dataRow = serverSocket.DbSelectRowFromTableString("AccountsData", dataid);
+                        if (dataRow != null)
+                        {
+                            serverSocket.Send(socket, new SocketMessage("getdatasuccess", dataRow[1] /* TODO: Add new data items if more data gets stored in the database */));
+                        }
+                        else
+                        {
+                            serverSocket.Send(socket, new SocketMessage("getdatafail", "notfound"));
+                        }
+                        break;
+
+                    default:
+                        serverSocket.Send(socket, new SocketMessage("unknown", "error"));
+                        serverSocket.Log("The message type \"" + msg.type + "\" is unknown");
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                serverSocket.Log("An internal exception occured while receiving messages: " + ex.ToString());
             }
         }
     }

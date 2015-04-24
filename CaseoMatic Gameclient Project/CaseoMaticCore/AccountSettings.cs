@@ -9,8 +9,6 @@ namespace CaseoMaticCore
     public class AccountSettings
     {
         public AccountSettings()
-        {
-            
-        }
+        { }
     }
 }

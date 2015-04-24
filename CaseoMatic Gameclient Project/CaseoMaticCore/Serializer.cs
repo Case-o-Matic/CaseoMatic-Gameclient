@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
+using Newtonsoft.Json;
 
 namespace CaseoMaticCore
 {
@@ -12,11 +13,11 @@ namespace CaseoMaticCore
 
         public static string SerializeAndEncryptObject<T>(T obj)
         {
-            return Convert.ToBase64String(ProtectedData.Protect(Convert.FromBase64String(Json.JsonParser.Serialize<T>(obj)), entropy, DataProtectionScope.LocalMachine));
+            return ASCIIEncoding.ASCII.GetString(ProtectedData.Protect(Convert.FromBase64String(JsonConvert.SerializeObject(obj)), entropy, DataProtectionScope.LocalMachine));
         }
         public static T DeserializeAndDecryptString<T>(string text)
         {
-            return (T)Json.JsonParser.Deserialize<T>(Convert.ToBase64String(ProtectedData.Unprotect(ASCIIEncoding.ASCII.GetBytes(text), entropy, DataProtectionScope.LocalMachine)));
+            return (T)JsonConvert.DeserializeObject<T>(ASCIIEncoding.ASCII.GetString(ProtectedData.Unprotect(ASCIIEncoding.ASCII.GetBytes(text), entropy, DataProtectionScope.LocalMachine)));
         }
     }
 }

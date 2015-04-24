@@ -1,4 +1,4 @@
-﻿using Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -79,10 +79,10 @@ namespace CaseoMaticCore
         {
             try
             {
-                string messageSerialized = JsonParser.Serialize<SocketMessage>(socketmessage);
-                string messageSerializedAndEncrypted = Crypto.EncryptString(messageSerialized);
+                string messageSerialized = JsonConvert.SerializeObject(socketmessage);
+                string messageSerializedAndEncrypted = messageSerialized;//Crypto.EncryptString(messageSerialized);
 
-                byte[] messageInBytes = Convert.FromBase64String(messageSerializedAndEncrypted);
+                byte[] messageInBytes = ASCIIEncoding.ASCII.GetBytes(messageSerializedAndEncrypted);
                 socket.Send(messageInBytes);
 
                 return messageSerialized;
@@ -97,11 +97,11 @@ namespace CaseoMaticCore
         {
             try
             {
-                byte[] messageInBytes = new byte[256];
+                var messageInBytes = new byte[256];
                 socket.Receive(messageInBytes);
 
-                string message = Crypto.DecryptString(messageInBytes);
-                return JsonParser.Deserialize<SocketMessage>(Convert.ToBase64String(messageInBytes));
+                string message = ASCIIEncoding.ASCII.GetString(messageInBytes);//Crypto.DecryptString(messageInBytes);
+                return JsonConvert.DeserializeObject<SocketMessage>(ASCIIEncoding.ASCII.GetString(messageInBytes));
             }
             catch (Exception ex)
             {

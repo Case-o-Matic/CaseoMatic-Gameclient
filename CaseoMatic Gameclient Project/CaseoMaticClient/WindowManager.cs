@@ -49,7 +49,7 @@ namespace CaseoMaticClient
 
         public bool Login(string username, string password)
         {
-            MessageBox.Show(clientSocket.Send(new SocketMessage("login", username, password)));
+            clientSocket.Send(new SocketMessage("login", username, password));
             SocketMessage loginStateMsg = clientSocket.Receive();
 
             if (loginStateMsg.type == "loginsuccess")

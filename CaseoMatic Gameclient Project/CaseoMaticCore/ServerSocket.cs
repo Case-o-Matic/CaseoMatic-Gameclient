@@ -1,4 +1,4 @@
-﻿using Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
@@ -120,10 +120,10 @@ namespace CaseoMaticCore
                     return;
                 }
 
-                string messageSerialized = JsonParser.Serialize<SocketMessage>(socketmessage);
-                string messageSerializedAndEncrypted = Crypto.EncryptString(messageSerialized);
+                string messageSerialized = JsonConvert.SerializeObject(socketmessage);
+                string messageSerializedAndEncrypted = messageSerialized;//Crypto.EncryptString(messageSerialized);
 
-                byte[] messageInBytes = Convert.FromBase64String(messageSerializedAndEncrypted);
+                byte[] messageInBytes = ASCIIEncoding.ASCII.GetBytes(messageSerializedAndEncrypted);
                 socket.Send(messageInBytes);
             }
             catch (Exception ex)
@@ -144,9 +144,21 @@ namespace CaseoMaticCore
             logFileLines.Add(text);
         }
 
-        public string[] DbSelectRowFromTable(string table, string username)
+        public string[] DbSelectRowFromTableString(string table, string username)
         {
-            return new string[0] { };
+            using (var cmd = new OleDbCommand("SELECT * FROM " + table + " WHERE Username = " + username, dbConnection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var data = new List<string>();
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        data.Add(reader.GetString(i));
+                    }
+
+                    return data.ToArray();
+                }
+            }
         }
         public bool DbInsertRowIntoTable(string table, params object[] data)
         {
@@ -164,16 +176,16 @@ namespace CaseoMaticCore
 
         private void ReceiveMessages(object socket)
         {
+            Socket sock = socket as Socket;
             try
             {
-                Socket sock = socket as Socket;
                 while (isOnline)
                 {
                     byte[] msgInBytes = new byte[512];
                     sock.Receive(msgInBytes);
-
-                    string message = Crypto.DecryptString(msgInBytes);
-                    SocketMessage socketMessage = JsonParser.Deserialize<SocketMessage>(message);
+                    
+                    string message = ASCIIEncoding.ASCII.GetString(msgInBytes);//Crypto.DecryptString(msgInBytes);
+                    SocketMessage socketMessage = JsonConvert.DeserializeObject<SocketMessage>(message);
                     if (OnReceiveMessage != null)
                         OnReceiveMessage(sock, socketMessage);
                 }
@@ -182,18 +194,32 @@ namespace CaseoMaticCore
             {
                 Log("Exception while receiving messages: " + ex.ToString());
             }
+            finally
+            {
+                if (sock != null)
+                {
+                    // Send a "forceclose" message to the client?
+
+                    if (sock.Connected)
+                        sock.Close();
+                    socketConnections.Remove(sock);
+                }
+            }
         }
         private void CheckClientConnections()
         {
             for (int i = 0; i < socketConnections.Count; i++)
             {
                 Socket sock = socketConnections.ElementAt(i).Key;
-                bool part1 = sock.Poll(350, SelectMode.SelectRead); // Find a right time for the response
-                bool part2 = (sock.Available == 0);
-                if (part1 && part2)
+                if (sock.Connected)
                 {
-                    sock.Close();
-                    socketConnections.Remove(sock);
+                    bool part1 = sock.Poll(350, SelectMode.SelectRead); // Find a right time for the response
+                    bool part2 = (sock.Available == 0);
+                    if (part1 && part2)
+                    {
+                        sock.Close();
+                        socketConnections.Remove(sock);
+                    }
                 }
             }
         }
@@ -201,7 +227,10 @@ namespace CaseoMaticCore
         private void DbInitialize(string dbname)
         {
             if (dbConnection == null)
-                dbConnection = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + dbname + ";Persist Security=False");
+            {
+                dbConnection = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + dbname + ";Persist Security=False;");
+                dbConnection.Open();
+            }
             else
                 Log("The database is already initialized");
         }
